@@ -40,15 +40,17 @@ df_filtered["Price"] = (df_filtered["Cost"] * (1 + markup_perc/100)) * (1 + tax_
 if round_up:
     df_filtered["Price"] = df_filtered["Price"].round()
 
-df_filtered["profit_per_product"] = (df_filtered["Price"] / (1 + tax_rate/100) - df_filtered["Cost"])
-df_filtered["gross_profit"] = df_filtered["profit_per_product"] * df_filtered["Sales"]
+df_filtered["gross_profit_per_unit"] = (df_filtered["Price"] / (1 + tax_rate/100) - df_filtered["Cost"])
+df_filtered["net_profit_per_unit"] = df_filtered["gross_profit_per_unit"] * (1 - net_tax_perc / 100)
+df_filtered["gross_profit"] = df_filtered["gross_profit_per_unit"] * df_filtered["Sales"]
 df_filtered["tax_amount"] = df_filtered["gross_profit"] * (net_tax_perc / 100)
 df_filtered["net_profit"] = df_filtered["gross_profit"] - df_filtered["tax_amount"]
+df_filtered["tax_amount_per_unit"] = df_filtered["gross_profit_per_unit"] - df_filtered["net_profit_per_unit"]
 
 m1, m2, m3 = st.columns(3)
 m1.metric("Total Sales Volume", f"{df_filtered['Sales'].sum()}")
-m2.metric("Total Net Profit", f"${df_filtered['net_profit'].sum()}")
-m3.metric("Tax Liability", f"${df_filtered['tax_amount'].sum()}")
+m2.metric("Total Net Profit", f"${df_filtered['net_profit'].sum():,.2f}")
+m3.metric("Tax Liability", f"${df_filtered['tax_amount'].sum():,.2f}")
 
 line_shape = "spline" if make_spline else "linear"
 
@@ -71,7 +73,7 @@ c1, c2 = st.columns([2, 1])
 
 with c1:
     st.subheader("Detailed Comparison")
-    fig_multi = px.bar(df_filtered, x="Date", y=["Cost", "Price", "profit_per_product"], barmode="group")
+    fig_multi = px.bar(df_filtered, x="Date", y=["Cost", "Price", "net_profit_per_unit", "gross_profit_per_unit", "tax_amount_per_unit"], barmode="group")
     st.plotly_chart(fig_multi, width="stretch")
 
 with c2:
