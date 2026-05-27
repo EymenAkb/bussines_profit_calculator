@@ -4,21 +4,33 @@ import streamlit as st
 import logging
 import warnings
 
-st.set_page_config(page_title="Business Profit Simulator", layout="wide")
+st.title("Business Profit & Tax Calculator")
+st.set_page_config(page_title="Business Profit Calculator", layout="wide")
+
+deafult_url = "https://raw.githubusercontent.com/EymenAkb/bussines_profit_calculator/refs/heads/main/Py.csv"
 
 @st.cache_data
-def load_data(file_path):
+def load_data(file_path=None):
     data = pd.read_csv(file_path)
-    data["Date"] = pd.to_datetime(data["Date"], format='%Y')
+    
+    if "Date" in data.columns:
+        data["Date"] = pd.to_datetime(data["Date"], format='%Y')
+        
     return data
 
-df = load_data("Py.csv")
+uploaded_file = st.file_uploader("Upload your own CSV", type="csv")
+st.header("Summary")
+if uploaded_file is not None:
+    df = load_data(uploaded_file)
+else:
+    df = load_data(deafult_url)
+
 df = df.select_dtypes(exclude=["category", "object"])
 
-st.title("Business Profit & Tax Simulator")
+
 
 with st.sidebar:
-    st.header("Simulation Settings")
+    st.header("Calculation Settings")
     
     min_year  = int(df["Date"].dt.year.min())
     max_year = int(df["Date"].dt.year.max())
@@ -82,3 +94,11 @@ with c2:
     corr_mat = numeric_df.corr()
     fig_heat = px.imshow(corr_mat, text_auto=".2f", color_continuous_scale="RdBu_r")
     st.plotly_chart(fig_heat, width="stretch")
+
+csv = df_filtered.to_csv(index=False).encode('utf-8')
+st.download_button(
+    label="Download Simulation Results",
+    data=csv,
+    file_name='simulation_results.csv',
+    mime='text/csv',
+)
