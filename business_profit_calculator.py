@@ -4,8 +4,8 @@ import streamlit as st
 import logging
 import warnings
 
-st.title("Business Profit & Tax Calculator")
 st.set_page_config(page_title="Business Profit Calculator", layout="wide")
+st.title("Business Profit & Tax Calculator")
 
 deafult_url = "https://raw.githubusercontent.com/EymenAkb/bussines_profit_calculator/refs/heads/main/Py.csv"
 
